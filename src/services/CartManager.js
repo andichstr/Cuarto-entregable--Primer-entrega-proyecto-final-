@@ -38,7 +38,7 @@ export class CartManager {
         }
     }
 
-    async addProductToCart(cartId, productId, product){
+    async addProductToCart(cartId, productId){
         const cartIndex = this.getCartIndex(cartId);
         if (!!cartIndex) {
             const productIndex = this.getProductIndex(cartIndex, productId);
