@@ -59,6 +59,7 @@ export class CartManager {
         if (!!productIndex && productIndex>=0) this.carts[cartIndex].products[productIndex].quantity++;
         else this.carts[cartIndex].products.push({ "id": productId, "quantity": 1 })
         await fs.writeFile(this.path, JSON.stringify(this.carts));
+        return productManager.getProductById(productId);
     }
 
     getCart(id) {
