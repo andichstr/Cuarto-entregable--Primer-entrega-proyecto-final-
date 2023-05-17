@@ -24,13 +24,18 @@ export class CartManager {
     }
 
     async addCart(products) {
+        const productManager = new ProductManager();
+        await productManager.customConstructor();
         const lastId = await this.getLastId();
         if (!await this.productsExists(products)) return null;
-        const cart = new Cart(products);
-        cart.setId(lastId + 1);
-        this.carts.push(cart);
-        await fs.writeFile(this.path, JSON.stringify(this.carts));
-        return cart;
+        const hasStock = await productManager.reduceStock(products);
+        if(hasStock) {
+            const cart = new Cart(products);
+            cart.setId(lastId + 1);
+            this.carts.push(cart);
+            await fs.writeFile(this.path, JSON.stringify(this.carts));
+            return cart;
+        } else return null;
     }
 
     async getCartById(id) {
@@ -46,20 +51,26 @@ export class CartManager {
         const cartIndex = this.getCartIndex(cartId);
         const productManager = new ProductManager();
         await productManager.customConstructor();
-        if (cartIndex < 0) {
+        if (cartIndex == null || cartIndex < 0) {
             console.error(`Cart with id: ${cartId} not found.`);
-            return null;
+            return -1;
         }
         if (!productManager.getProductById(productId)) {
             console.error(`Product with id: ${productId} not found.`);
-            return null;
+            return -2;
+        } else {
+            const hasStock = productManager.checkStock(productId);
+            if (!hasStock) {
+                console.error(`Product with id: ${productId} has no stock.`);
+                return -3;
+            }
         }
         const productIndex = this.getProductIndex(cartIndex, productId);
-        console.log(`${productIndex}`);
-        if (!!productIndex && productIndex>=0) this.carts[cartIndex].products[productIndex].quantity++;
+        if (productIndex!=null && productIndex>=0) this.carts[cartIndex].products[productIndex].quantity++;
         else this.carts[cartIndex].products.push({ "id": productId, "quantity": 1 })
+        await productManager.reduceProductStock(productId);
         await fs.writeFile(this.path, JSON.stringify(this.carts));
-        return productManager.getProductById(productId);
+        return {data: productManager.getProductById(productId)};
     }
 
     getCart(id) {

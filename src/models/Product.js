@@ -1,7 +1,7 @@
 //@ts-check
 export class Product{
     constructor(title, description, code, price, stock, category, status=true, thumbnails=[]) {
-        if (!!title && !!description && !!code && !!price && !!stock && !!category) {
+        if (!!title && !!description && !!code && !!price && stock>=0 && !!category) {
             this.id = null;
             this.status = status;
             this.title = title;

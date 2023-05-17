@@ -68,16 +68,19 @@ export class ProductManager {
             const products = await this.getProducts();
             let found = false;
             let i = 0;
-            while (i < products.length || !found) {
+            let newProduct;
+            while (i < products.length && !found) {
                 if (products[i].id == id) {
                     found = true;
                     const title = product.title ? product.title : products[i].title;
                     const description = product.description? product.description : products[i].description;
-                    const price = product.price? product.price : products[i].price;
-                    const thumbnail = product.thumbnail? product.thumbnail : products[i].thumbnail;
                     const code = product.code? product.code : products[i].code;
-                    const stock = product.stock? product.stock : products[i].stock;
-                    const newProduct = new Product(title, description, price, thumbnail, code, stock);
+                    const price = product.price? product.price : products[i].price;
+                    const stock = product.stock>=0? product.stock : products[i].stock;
+                    const category = product.category? product.category : products[i].category;
+                    const status = product.status? product.status : products[i].status;
+                    const thumbnails = product.thumbnails? product.thumbnails : products[i].thumbnails;
+                    newProduct = new Product(title, description, code, price, stock, category, status, thumbnails);
                     newProduct.setId(id);
                     products[i] = newProduct;
                 }
@@ -120,7 +123,7 @@ export class ProductManager {
         }
     }
     isValidProduct(product) {
-        if (!product.title || !product.description || !product.code || !product.price || !product.stock || !product.category) {
+        if (!product.title || !product.description || !product.code || !product.price || product.stock<0 || !product.category) {
             return false;
         }
         return true;
@@ -130,5 +133,33 @@ export class ProductManager {
             return true;
         }
         return false;
+    }
+    checkStock(id) {
+        const product = this.getProductById(id);
+        return product.stock>0;
+    }
+    async reduceStock(products){
+        let i = 0;
+        let hasStock = true;
+        let product;
+        while(hasStock && i < products.length) {
+            product = this.getProductById(products[i].id);
+            if (product.stock < products[i].quantity) hasStock = false;
+            i++;
+        }
+        if (hasStock){
+            for (let n = 0; n < products.length; n++){
+                product = this.getProductById(products[n].id);
+                product.stock -= products[n].quantity
+                await this.updateProduct(products[n].id, product);
+            }
+            return true;
+        }
+        return false;
+    }
+    async reduceProductStock(id){
+        const product = this.getProductById(id);
+        product.stock--;
+        await this.updateProduct(id, product);
     }
 }

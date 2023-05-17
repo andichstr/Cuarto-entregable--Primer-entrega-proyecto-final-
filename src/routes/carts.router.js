@@ -47,18 +47,35 @@ router.post("/:cid/product/:pid", async (req, res) => {
     const cartId = req.params.cid;
     const productId = req.params.pid;
     const addedProduct = await service.addProductToCart(cartId, productId);
-    if (!!addedProduct) {
+    if (!!addedProduct.data) {
         return res.status(201).json({
             status: "Success",
             message: "Product added successfully",
-            data: addedProduct
+            data: addedProduct.data
+        });
+    } else if (addedProduct == -1){ 
+        return res.status(404).json({
+            status: "Error",
+            message: `Cart with id: ${cartId} not found.`,
+            data: null
+        });
+    } else if (addedProduct == -2) {
+        return res.status(404).json({
+            status: "Error",
+            message: `Product with id: ${productId} not found.`,
+            data: null
+        });
+    } else if (addedProduct == -3){
+        return res.status(400).json({
+            status: "Error",
+            message: `Product with id: ${productId} has no stock.`,
+            data: null
         });
     } else return res.status(400).json({
         status: "Error",
-        message: "Invalid request.",
+        message: `Invalid request.`,
         data: null
     });
-
 });
 
 export default router;
