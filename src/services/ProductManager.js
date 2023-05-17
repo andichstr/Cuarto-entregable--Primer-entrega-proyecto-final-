@@ -1,11 +1,13 @@
+//@ts-check
 import fs from 'fs/promises';
 import { Product } from '../models/Product.js';
+import path from 'path';
 
 export class ProductManager {
     constructor () {}
 
-    async customConstructor(path){
-        this.path = path;
+    async customConstructor(){
+        this.path = path.resolve() + "\\src\\db\\products.json";
         this.products = await this.getProducts();
     }
 
@@ -17,8 +19,9 @@ export class ProductManager {
 
     async addProduct(product) {
         if (this.isValidProduct(product)) {
+            console.log(JSON.stringify(product));
             const products = await this.getProducts();
-            const newProduct = new Product(product.title, product.description, product.price, product.thumbnail, product.code, product.stock);
+            const newProduct = new Product(product.title, product.description, product.code, product.price, product.stock, product.category);
             const id = await this.getLastId() + 1;
             newProduct.setId(id);
             products.push(newProduct);
@@ -45,13 +48,12 @@ export class ProductManager {
         }
     }
 
-    async getProductById(id) {
+    getProductById(id) {
         let foundProduct;
-        const products = await this.getProducts();
-        for (let i = 0; i<products.length; i++) {
-            if (products[i].id == id){
-                foundProduct = products[i];
-                i = products.length;
+        for (let i = 0; i<this.products.length; i++) {
+            if (this.products[i].id == id){
+                foundProduct = this.products[i];
+                i = this.products.length;
             }
         }
         if(!!foundProduct) return foundProduct;
@@ -84,13 +86,14 @@ export class ProductManager {
             if (found) {
                 this.products = products;
                 await fs.writeFile(this.path, JSON.stringify(this.products));
+                return newProduct;
             } else {
                 console.log(`Product with id: ${id} not found.`);
-                throw new Error(`Product with id: ${id} not found.`);
+                return null;
             }
         } else {
             console.log(`El producto ${JSON.stringify(product)} no contiene ninguna propiedad valida para actualizar`);
-            throw new Error(`El producto ${JSON.stringify(product)} no contiene ninguna propiedad valida para actualizar`);
+            return null;
         };
     }
 
@@ -117,13 +120,13 @@ export class ProductManager {
         }
     }
     isValidProduct(product) {
-        if (!product.title || !product.description || !product.code || !product.price || !product.stock || !product.category || !product.thumbnails) {
+        if (!product.title || !product.description || !product.code || !product.price || !product.stock || !product.category) {
             return false;
         }
         return true;
     }
     hasValidProp(product) {
-        if (!!product.title || !!product.description || !!product.code || !!product.price || !!product.stock || !!product.category || !!product.thumbnails) {
+        if (!!product.title || !!product.description || !!product.code || !!product.price || !!product.stock || !!product.category) {
             return true;
         }
         return false;

@@ -1,3 +1,4 @@
+//@ts-check
 export class Product{
     constructor(title, description, code, price, stock, category, status=true, thumbnails=[]) {
         if (!!title && !!description && !!code && !!price && !!stock && !!category) {
@@ -8,7 +9,7 @@ export class Product{
             this.code = code;
             this.price = price;
             this.stock = stock;
-            this.category = this.category;
+            this.category = category;
             this.thumbnails = thumbnails;
         } else throw new Error("All properties except thumbnails must be set");
     }

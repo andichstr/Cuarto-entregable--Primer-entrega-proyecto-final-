@@ -1,3 +1,4 @@
+//@ts-check
 import express from 'express';
 import productsRoutes from './routes/products.router.js';
 import cartsRoutes from './routes/carts.router.js';
@@ -12,7 +13,7 @@ app.use("/api/products", productsRoutes);
 app.use("/api/carts", cartsRoutes);
 
 app.get('*', (req, res) => {
-  res.json('{"error": "Page not found."}');
+  res.json({"error": "Page not found."});
 });
 
 app.listen(port, () => {

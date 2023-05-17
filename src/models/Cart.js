@@ -1,3 +1,4 @@
+//@ts-check
 export class Cart{
     constructor(products=[]) {
         this.id = null;

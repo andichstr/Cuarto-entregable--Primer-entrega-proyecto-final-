@@ -1,17 +1,16 @@
+//@ts-check
 import { Router } from "express";
 import { CartManager } from "../services/CartManager.js";
-import path from 'path';
 
 const router = Router();
 const service = new CartManager();
-await service.customConstructor(path.resolve() + "\\src\\db\\carts.json");
+await service.customConstructor();
 
 router.post("/", async (req, res) => {
     if (!!req.body.products) {
-        const products = JSON.parse(req.body.product);
+        const products = req.body.products;
         const addedCart = await service.addCart(products);
         if (!!addedCart) {
-            ;
             return res.status(201).json({
                 status: "Success",
                 message: "Cart created successfully",

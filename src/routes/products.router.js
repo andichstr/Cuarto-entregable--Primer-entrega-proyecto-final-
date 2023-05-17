@@ -1,10 +1,10 @@
+//@ts-check
 import { Router } from "express";
 import { ProductManager } from "../services/ProductManager.js";
-import path from 'path';
 
 const router = Router();
 const service = new ProductManager();
-await service.customConstructor(path.resolve() + "\\src\\db\\products.json");
+await service.customConstructor();
 
 router.get("/", async (req, res) => {
     let products = await service.getProducts();
@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
 
 router.get('/:pid', async (req, res) => {
     const id = req.params.pid;
-    const product = await service.getProductById(id);
+    const product = service.getProductById(id);
     if (!!product) return res.status(200).json({
         status: "Success",
         message: "Product found",
@@ -35,7 +35,7 @@ router.get('/:pid', async (req, res) => {
 
 router.post("/", async (req, res) => {
     if (!!req.body.product){
-        const product = JSON.parse(req.body.product);
+        const product = req.body.product;
         const addedProduct = await service.addProduct(product);
         if (!!addedProduct){;
             return res.status(201).json({
