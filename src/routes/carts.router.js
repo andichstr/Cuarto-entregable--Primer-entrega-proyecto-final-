@@ -7,18 +7,23 @@ const service = new CartManager();
 await service.customConstructor();
 
 router.post("/", async (req, res) => {
-    if (!!req.body.products) {
-        const products = req.body.products;
+    if (!!req.body) {
+        const products = req.body;
         const addedCart = await service.addCart(products);
-        if (!!addedCart) {
+        if (!!addedCart.data) {
             return res.status(201).json({
                 status: "Success",
                 message: "Cart created successfully",
                 data: addedCart
             });
-        } else return res.status(400).json({
+        } else if (addedCart == -1) return res.status(400).json({
             status: "Error",
             message: "Invalid products on body request.",
+            data: null
+        });
+        else if (addedCart == -2) return res.status(400).json({
+            status: "Error",
+            message: "Products on body request has no stock.",
             data: null
         });
     } else return res.status(400).json({
@@ -44,8 +49,8 @@ router.get('/:cid', async (req, res) => {
 });
 
 router.post("/:cid/product/:pid", async (req, res) => {
-    const cartId = req.params.cid;
-    const productId = req.params.pid;
+    const cartId = Number.parseInt(req.params.cid);
+    const productId = Number.parseInt(req.params.pid);
     const addedProduct = await service.addProductToCart(cartId, productId);
     if (!!addedProduct.data) {
         return res.status(201).json({

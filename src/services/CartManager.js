@@ -27,15 +27,15 @@ export class CartManager {
         const productManager = new ProductManager();
         await productManager.customConstructor();
         const lastId = await this.getLastId();
-        if (!await this.productsExists(products)) return null;
+        if (!await this.productsExists(products)) return -1;
         const hasStock = await productManager.reduceStock(products);
         if(hasStock) {
             const cart = new Cart(products);
             cart.setId(lastId + 1);
             this.carts.push(cart);
             await fs.writeFile(this.path, JSON.stringify(this.carts));
-            return cart;
-        } else return null;
+            return {data: cart};
+        } else return -2;
     }
 
     async getCartById(id) {
@@ -51,11 +51,13 @@ export class CartManager {
         const cartIndex = this.getCartIndex(cartId);
         const productManager = new ProductManager();
         await productManager.customConstructor();
+        const product = productManager.getProductById(productId);
+        console.log(JSON.stringify(product));
         if (cartIndex == null || cartIndex < 0) {
             console.error(`Cart with id: ${cartId} not found.`);
             return -1;
         }
-        if (!productManager.getProductById(productId)) {
+        if (!product) {
             console.error(`Product with id: ${productId} not found.`);
             return -2;
         } else {
@@ -104,10 +106,14 @@ export class CartManager {
         if (products.length==0) return false;
         const productManager = new ProductManager();
         await productManager.customConstructor();
-        let productExist = true;
+        let productExist = false;
         let i=0;
-        while (productExist && i < products.length) {
-            if (!productManager.getProductById(products[i].id)) productExist = false;
+        while (!productExist && i < products.length) {
+            if (!!productManager.getProductById(products[i].id)) productExist = true;
+            else {
+                productExist = false;
+                i = products.length;
+            }
             i++
         }
         return productExist;

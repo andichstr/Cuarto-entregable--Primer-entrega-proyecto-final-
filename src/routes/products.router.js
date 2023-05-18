@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
 });
 
 router.get('/:pid', async (req, res) => {
-    const id = req.params.pid;
+    const id = Number.parseInt(req.params.pid);
     const product = service.getProductById(id);
     if (!!product) return res.status(200).json({
         status: "Success",
@@ -34,8 +34,8 @@ router.get('/:pid', async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-    if (!!req.body.product){
-        const product = req.body.product;
+    if (!!req.body){
+        const product = req.body;
         const addedProduct = await service.addProduct(product);
         if (!!addedProduct){;
             return res.status(201).json({
@@ -56,15 +56,15 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/:pid", async (req, res) => {
-    if (!!req.body.product){
-        const id = req.params.pid;
-        const product = JSON.parse(req.body.product);
+    if (!!req.body){
+        const id = Number.parseInt(req.params.pid);
+        const product = req.body;
         const updatedProduct = await service.updateProduct(id, product);
         if (!!updatedProduct){;
             return res.status(200).json({
                 status: "Success",
                 message: "Products found",
-                data: product
+                data: updatedProduct
             });
         }else return res.status(400).json({
             status: "Error",
@@ -79,11 +79,11 @@ router.put("/:pid", async (req, res) => {
 });
 
 router.delete('/:pid', async (req, res) => {
-    const id = req.params.pid;
+    const id = Number.parseInt(req.params.pid);
     const product = await service.deleteProduct(id);
     if (!!product) return res.status(200).json({
         status: "Success",
-        message: `Product ${product} was successfully deleted`,
+        message: `Product with id=${product.id} was successfully deleted`,
         data: product
     })
     else return res.status(404).json({
