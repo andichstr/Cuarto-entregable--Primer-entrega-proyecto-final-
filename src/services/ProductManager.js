@@ -19,18 +19,23 @@ export class ProductManager {
 
     async addProduct(product) {
         if (this.isValidProduct(product)) {
-            console.log(JSON.stringify(product));
             const products = await this.getProducts();
-            const newProduct = new Product(product.title, product.description, product.code, product.price, product.stock, product.category);
-            const id = await this.getLastId() + 1;
-            newProduct.setId(id);
-            products.push(newProduct);
-            this.products = products;
-            await fs.writeFile(this.path, JSON.stringify(this.products), "utf-8");
-            return newProduct;
+            if (!this.isCodeRepeated(products, product.code)){
+                const newProduct = new Product(product.title, product.description, product.code, product.price, product.stock, product.category);
+                const id = await this.getLastId() + 1;
+                newProduct.setId(id);
+                products.push(newProduct);
+                this.products = products;
+                await fs.writeFile(this.path, JSON.stringify(this.products), "utf-8");
+                return {data: newProduct};
+            } else {
+                console.error(`Error al agregar producto ingresado con codigo ${product.code}: Codigo repetido.`)
+                return -1;
+            }
+            
         } else {
             console.log(`Todos los campos deben ser seteados`);
-            return null;
+            return -2;
         }
     }
 
@@ -105,7 +110,7 @@ export class ProductManager {
         let found = false;
         let i = 0;
         let product;
-        while (i < products.length || !found) {
+        while (i < products.length && !found) {
             if (products[i].id == id) {
                 product = products[i];
                 products.splice(i, 1);
@@ -161,5 +166,12 @@ export class ProductManager {
         const product = this.getProductById(id);
         product.stock--;
         await this.updateProduct(id, product);
+    }
+    isCodeRepeated(products, code) {
+        let isCodeRepeated = false;
+        for (let i=0; i<products.length; i++) {
+            if (products[i].code == code) isCodeRepeated = true;
+        }
+        return isCodeRepeated;
     }
 }

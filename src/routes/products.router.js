@@ -37,17 +37,26 @@ router.post("/", async (req, res) => {
     if (!!req.body){
         const product = req.body;
         const addedProduct = await service.addProduct(product);
-        if (!!addedProduct){;
+        console.log(addedProduct);
+        if (!!addedProduct.data){
             return res.status(201).json({
                 status: "Success",
-                message: `Product created successfully with id=${addedProduct.getId()}`,
-                data: addedProduct
+                message: `Product created successfully with id=${addedProduct.data.id}`,
+                data: addedProduct.data
             });
-        }else return res.status(400).json({
-            status: "Error",
-            message: "Invalid product on body request.",
-            data: null
-    });
+        }else if (addedProduct==-1){ 
+            return res.status(400).json({
+                status: "Error",
+                message: `Error adding product with code ${req.body.code}: Repeated code.`,
+                data: null
+            });
+        }else if (addedProduct==-2){
+            return res.status(400).json({
+                status: "Error",
+                message: "Invalid product on body request.",
+                data: null
+            });
+        }
     } else return res.status(400).json({
         status: "Error",
         message: "No product found to add on body request.",
